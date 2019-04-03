@@ -33,7 +33,7 @@
 }
 mass_th::mass_th(int r)
 {
-	cout << this << "- Construct\n";
+	//cout << this << "- Construct\n";
   row = r;
   col = 1;
 	name = "collumn";

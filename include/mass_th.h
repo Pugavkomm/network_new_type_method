@@ -160,13 +160,16 @@ mass_th operator*(const mass_th& rigth_part) const
 		exit(11);
 	}
   mass_th out(row, rigth_part.col);
-  //#pragma omp parallel
-  //#pragma omp for
+   // out.zero();
+  #pragma omp parallel
+  #pragma omp for
   for (int i = 0; i < row; i++)
     for (int j = 0; j < rigth_part.col; j++)
+    {
+      out.matrix[i][j] = 0;
       for (int r = 0; r < col; r++)
-      //cout << matrix[i][r] * rigth_part.matrix[r][j] << endl;
         out.matrix[i][j] += matrix[i][r] * rigth_part.matrix[r][j];
+    }
   return out;
 }
   void display_m();

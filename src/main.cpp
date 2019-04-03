@@ -14,16 +14,17 @@ int main(int argc, char const *argv[])
 {
 	cout << "start\n";
 	srand(time(0));
+	cout << 1 << endl;
 	omp_set_num_threads(6);
-	//omp_set_dynamic(0);
+	omp_set_dynamic(0);
 	cout << "Start\n";
 	int N = 2000; //Количество нейронов
 	double dt = 0.001;
-	double T = 100.;		// Общее время интегрирования
+	double T = 90.;			// Общее время интегрирования
 	int nt = round(T / dt); // количество итераций
 	int i_last = 0;
 	double tmin = 20;  // начало обучения
-	double tcrit = 60; // конец обучения
+	double tcrit = 40; // конец обучения
 	int imin = round(tmin / dt);
 	int icrit = round(tcrit / dt);
 	int count;	// количество элементов ???
@@ -48,7 +49,7 @@ int main(int argc, char const *argv[])
 	beta = 0.018;
 	d = .26;
 	a = 0.25;
-	J = 0.15;
+	J = 0.15; 
 	double vpeak = .2;
 	double vreset = (1 + a - sqrt(1.0 - a + a * a)) / 3;
 	double td = 0.1;
@@ -107,6 +108,7 @@ int main(int argc, char const *argv[])
 	// Разбрасываем E
 	E.random(-1, 1);
 	E = E * Q;
+	cout << Q;
 	//Формируем массивы для выражений синапсов
 	//
 	//Обнуляем основные массивы (на всякий)
@@ -140,7 +142,12 @@ int main(int argc, char const *argv[])
 
 	cout << "Параметры системы\n"
 		 << "G = " << G << ", Q = " << Q << "\n";
+	ofstream file1; // сохранение нейронов
 
+	file1.open("file1.txt");
+	file1.close();
+	file1.open("file1.txt", ios::app);
+	double *saveerror = new double[nt];
 	///////////////////////START ALGORITM//////////////////////////
 	///////////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////
@@ -154,13 +161,31 @@ int main(int argc, char const *argv[])
 		model_synaps(h, r, hr, dt, v, vpeak, vreset, IPSC, JD, count, N, M, M1);
 		//Fauto zs = ((BPhi--) * r);
 		z = ((BPhi--) * r).matrix[0][0];
-		cout << z;
-		cout << '\n';
+
+		err = z - xz[step_system];
+		saveerror[step_system] = err;
+		if (step_system > imin && step_system < icrit)
+		{
+			cd = Pinv * r;
+			BPhi = BPhi - (cd * err);
+			Pinv = Pinv - (cd * cd--) / (1.0 + (r-- * cd).ret(0, 0));
+		}
+		if (step_system % 100 == 1)
+		{
+			start_time = (omp_get_wtime() - start_time) / 100;
+			cout << "sin = " << xz[step_system] << ", z = " << z << ", error = " << err << ", x1 = " << v.ret(0, 0) << '\n';
+			cout << "step = " << step_system << "осталось: " << (start_time * (nt - step_system)) / 60 << " минут" << '\n';
+			start_time = omp_get_wtime();
+			//start_time = omp_get_wtime();
+		}
 	}
 
-	///////////////////////START ALGORITM//////////////////////////
+	///////////////////////END ALGORITM//////////////////////////
 	///////////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////
+	for (int i = 0; i < nt; i++)
+		file1 << saveerror[i] << '\n';
+	file1.close();
 	cout << "Test program start cmake" << endl;
 	return 0;
 }
