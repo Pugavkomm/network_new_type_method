@@ -128,7 +128,56 @@ mass_th operator--(int)
       out.matrix[j][i] = matrix[i][j];
   return out;
 }
+void operator*=(const double &x ) const
+{
+  #pragma omp parallel
+  #pragma omp for
+  for (int i = 0; i < row; i++)
+    for (int j = 0; j < col; j++)
+      matrix[i][j] *= x;
+}
 
+void operator/=(const double &x ) const
+{
+  #pragma omp parallel
+  #pragma omp for
+  for (int i = 0; i < row; i++)
+    for (int j = 0; j < col; j++)
+      matrix[i][j] /= x;
+}
+void  operator-=( const mass_th &other) const
+{
+  #pragma omp parallel
+  #pragma omp for
+  for (int i = 0; i < row; i++)
+    for (int j = 0; j < col; j++)
+      matrix[i][j] -= other.matrix[i][j];
+}
+void  operator-=( const double&other) const
+{
+  #pragma omp parallel
+  #pragma omp for
+  for (int i = 0; i < row; i++)
+    for (int j = 0; j < col; j++)
+      matrix[i][j] -= other;
+}
+
+void operator+=(const mass_th &other) const
+{
+  #pragma omp parallel
+  #pragma omp for
+  for (int i = 0; i < row; i++)
+    for (int j = 0; j < col; j++)
+      matrix[i][j] += other.matrix[i][j];
+}
+void operator+=(const double &other) const
+{
+  #pragma omp parallel
+  #pragma omp for
+  for (int i = 0; i < row; i++)
+    for (int j = 0; j < col; j++)
+      matrix[i][j] += other;
+}
 mass_th operator*(const double& x) const
 {
   mass_th out(row, col);
@@ -179,7 +228,7 @@ mass_th operator*(const mass_th& rigth_part) const
   void ones();
   void zero();
   double ret(int i, int j);
-
+  mass_th tr();
 
 };
 
